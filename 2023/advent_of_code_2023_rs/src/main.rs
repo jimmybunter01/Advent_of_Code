@@ -1,3 +1,4 @@
+use std::fmt::format;
 use std::fs::read_to_string;
 use std::path::Path;
 
@@ -26,13 +27,13 @@ fn parse_callibration_values(calibration_strings: Vec<String>) -> u64 {
     for digit_set in digits_in_calibration_strings {
         let digit_set_len = digit_set.len();
 
-        let first_num = &digit_set[0..1].to_string();
-        let second_num = &digit_set[digit_set_len - 1..digit_set_len].to_string();
+        let first_digit = &digit_set[0..1].to_string();
+        let second_digit = &digit_set[digit_set_len - 1..digit_set_len].to_string();
+        let two_digits_together = format!("{first_digit}{second_digit}");
+        let num: u64 = two_digits_together.parse().unwrap();
 
-        let digit_one: u64 = first_num.parse().unwrap();
-        let digit_two: u64 = second_num.parse().unwrap();
-        collection_digits_total += digit_one + digit_two;
-        println!("{}+{}={}", digit_one, digit_two, collection_digits_total);
+        collection_digits_total += num;
+        println!("{}, {}", num, collection_digits_total);
     }
     collection_digits_total
 }
