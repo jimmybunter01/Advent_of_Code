@@ -16,7 +16,7 @@ fn extract_nums_from_string(a_string: &String) -> String {
 }
 
 fn parse_callibration_values(calibration_strings: Vec<String>) -> u64 {
-    let _extract_digits: Vec<u64>;
+    let mut collection_digits_total: u64 = 0;
 
     let digits_in_calibration_strings: Vec<String> = calibration_strings
         .iter()
@@ -25,19 +25,16 @@ fn parse_callibration_values(calibration_strings: Vec<String>) -> u64 {
 
     for digit_set in digits_in_calibration_strings {
         let digit_set_len = digit_set.len();
-        if digit_set_len > 1 {
-            // extract_digits.push(&digit_set[0..1] as u64 + &digit_set[digit_set_len - 1..digit_set_len] as u64)
-            println!(
-                "{}, {}",
-                &digit_set[0..1],
-                &digit_set[digit_set_len - 1..digit_set_len]
-            );
-        } else {
-            // extract_digits.push(&digit_set[0..1] as u64);
-            println!("{}", &digit_set[0..1]);
-        }
+
+        let first_num = &digit_set[0..1].to_string();
+        let second_num = &digit_set[digit_set_len - 1..digit_set_len].to_string();
+
+        let digit_one: u64 = first_num.parse().unwrap();
+        let digit_two: u64 = second_num.parse().unwrap();
+        collection_digits_total += digit_one + digit_two;
+        println!("{}+{}={}", digit_one, digit_two, collection_digits_total);
     }
-    100
+    collection_digits_total
 }
 
 fn main() {
