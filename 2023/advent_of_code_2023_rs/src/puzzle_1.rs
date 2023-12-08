@@ -132,12 +132,6 @@ mod part_2 {
             .map(|x| get_string_digits(x))
             .sum();
 
-        // let mut i = 1;
-        // for digit_set in digits_in_calibration_strings {
-        //     collection_digits_total += num;
-        //     println!("{} - {}, {}", i, num, collection_digits_total);
-        //     i += 1;
-        // }
         collection_digits_total
     }
 }
