@@ -1,145 +1,41 @@
+use std::ffi::c_double;
 use std::fs::read_to_string;
 use std::path::Path;
 
-mod part_1 {
-    pub fn extract_nums_from_string(a_string: &String) -> String {
-        a_string.chars().filter(|x| x.is_digit(10)).collect()
-    }
+// Notes:
+// Game ID does not matter as I can just count up the line numbers.
+// Initial assumption for part 1 is that any impossible game will have a value assigned to a colour which wil exceed a threshold.
 
-    pub fn parse_callibration_values(calibration_strings: Vec<String>) -> u64 {
-        let mut collection_digits_total: u64 = 0;
+const MAX_RED: u8 = 12;
+const MAX_GREEN: u8 = 13;
+const MAX_BLUE: u8 = 14;
 
-        let digits_in_calibration_strings: Vec<String> = calibration_strings
-            .iter()
-            .map(|x| extract_nums_from_string(x))
-            .collect();
-
-        for digit_set in digits_in_calibration_strings {
-            let digit_set_len = digit_set.len();
-
-            let first_digit = &digit_set[0..1].to_string();
-            let second_digit = &digit_set[digit_set_len - 1..digit_set_len].to_string();
-            let two_digits_together = format!("{first_digit}{second_digit}");
-            let num: u64 = two_digits_together.parse().unwrap();
-
-            collection_digits_total += num;
-            println!("{}, {}", num, collection_digits_total);
-        }
-        collection_digits_total
-    }
+#[derive(Debug)]
+enum CubeColour {
+    Red,
+    Green,
+    Blue,
 }
 
-mod part_2 {
-    use std::collections::HashMap;
+fn main() {
+    let input_path = if cfg!(windows) {
+        Path::new("SUPER_AMAZING_WINDOWS_PATH!")
+    } else {
+        Path::new("/Users/james/Documents/GitHub/Advent_of_Code/2023/advent_of_code_2023_rs/inputs/puzzle2.txt")
+    };
 
-    #[derive(Debug)]
-    struct NumLocation {
-        index: usize,
-        num: u64,
-    }
+    let input_strings = read_lines(input_path);
+    let mut game_id_sum = 0;
 
-    fn tuple_to_struct(tuple: (usize, &str)) -> NumLocation {
-        let nums_as_strings: HashMap<String, u64> = HashMap::from([
-            (String::from("one"), 1),
-            (String::from("two"), 2),
-            (String::from("three"), 3),
-            (String::from("four"), 4),
-            (String::from("five"), 5),
-            (String::from("six"), 6),
-            (String::from("seven"), 7),
-            (String::from("eight"), 8),
-            (String::from("nine"), 9),
-        ]);
-        let mut num = 0;
+    for (i, game_string) in input_strings.iter().enumerate() {
+        println!("{} - {}", i, parse_game_string(game_string.to_string()));
 
-        if tuple.1.len() > 1 {
-            num = nums_as_strings[tuple.1];
-        } else {
-            num = tuple.1.chars().nth(0).unwrap().to_digit(10).unwrap() as u64;
+        if parse_game_string(game_string.to_string()) {
+            game_id_sum += i + 1;
         }
-
-        let matched_num_string = NumLocation {
-            index: tuple.0,
-            num: num,
-        };
-        matched_num_string
     }
 
-    fn get_string_digits(a_string: &String) -> u64 {
-        let nums_as_strings: HashMap<String, char> = HashMap::from([
-            (String::from("one"), '1'),
-            (String::from("two"), '2'),
-            (String::from("three"), '3'),
-            (String::from("four"), '4'),
-            (String::from("five"), '5'),
-            (String::from("six"), '6'),
-            (String::from("seven"), '7'),
-            (String::from("eight"), '8'),
-            (String::from("nine"), '9'),
-        ]);
-
-        let mut nested_num_to_itertions_in_string: Vec<Vec<NumLocation>> = Vec::new();
-
-        for (num_string, num) in nums_as_strings.iter() {
-            let mut all_number_in_string = Vec::new();
-
-            let mut num_string_iterations_in_string: Vec<NumLocation> = a_string
-                .match_indices(num_string)
-                .into_iter()
-                .map(|x| tuple_to_struct(x))
-                .collect();
-
-            all_number_in_string.append(&mut num_string_iterations_in_string);
-
-            let mut num_iterations_in_string: Vec<NumLocation> = a_string
-                .match_indices(*num)
-                .into_iter()
-                .map(|x| tuple_to_struct(x))
-                .collect();
-
-            all_number_in_string.append(&mut num_iterations_in_string);
-
-            if !all_number_in_string.is_empty() {
-                nested_num_to_itertions_in_string.push(all_number_in_string);
-            }
-        }
-
-        let mut num_to_iterations_in_string: Vec<NumLocation> = nested_num_to_itertions_in_string
-            .into_iter()
-            .flatten()
-            .collect();
-        num_to_iterations_in_string.sort_by_key(|x| x.index);
-
-        let mut num_loc_iter = num_to_iterations_in_string.iter();
-        let first_loc = num_loc_iter.next().unwrap();
-        let first_digit = first_loc.num;
-
-        let last_loc = num_to_iterations_in_string.pop().unwrap();
-        let last_digit = last_loc.num;
-
-        let two_digits_together = format!("{first_digit}{last_digit}");
-        let num: u64 = two_digits_together.parse().unwrap();
-
-        println!("{:#?} - {}", num_to_iterations_in_string, num);
-        num
-    }
-
-    pub fn parse_callibration_values(calibration_strings: Vec<String>) -> u64 {
-        // let mut collection_digits_total: u64 = 0;
-
-        let collection_digits_total: u64 = calibration_strings
-            .iter()
-            .map(|x| get_string_digits(x))
-            .sum();
-
-        // let mut i = 1;
-        // for digit_set in digits_in_calibration_strings {
-        //     collection_digits_total += num;
-        //     println!("{} - {}, {}", i, num, collection_digits_total);
-        //     i += 1;
-        // }
-        collection_digits_total
-    }
+    println!("{}", game_id_sum)
 }
 
 fn read_lines(file: &Path) -> Vec<String> {
@@ -152,9 +48,72 @@ fn read_lines(file: &Path) -> Vec<String> {
     result
 }
 
-fn main() {
-    let input_path = Path::new("/Users/james/Documents/GitHub/Advent_of_Code/2023/advent_of_code_2023_rs/inputs/puzzle1.txt");
-    let calibration_strings = read_lines(input_path);
-    let outputs = part_2::parse_callibration_values(calibration_strings);
-    println!("{:#?}", outputs);
+fn parse_game_string(game_string: String) -> bool {
+    let split_game_string: Vec<&str> = game_string.split(":").collect();
+    let number_of_cube_colour_drawn: Vec<&str> = split_game_string[1]
+        .trim()
+        .split(|c| c == ',' || c == ';')
+        .collect();
+
+    let num_of_cubes: Vec<u8> = number_of_cube_colour_drawn
+        .iter()
+        .map(|x| extract_nums_from_string(x.to_string()))
+        .collect();
+
+    let cube_colours: Vec<CubeColour> = number_of_cube_colour_drawn
+        .iter()
+        .map(|x| get_colour_from_string(x.to_string()))
+        .collect();
+
+    for i in 0..num_of_cubes.len() {
+        match cube_colours[i] {
+            CubeColour::Red => {
+                if !cube_count_compare(num_of_cubes[i], MAX_RED) {
+                    return false;
+                }
+            }
+            CubeColour::Green => {
+                if !cube_count_compare(num_of_cubes[i], MAX_GREEN) {
+                    return false;
+                }
+            }
+            CubeColour::Blue => {
+                if !cube_count_compare(num_of_cubes[i], MAX_BLUE) {
+                    return false;
+                }
+            }
+            _ => {
+                panic!("Not a valid colour!");
+            }
+        }
+    }
+
+    true
+}
+
+fn extract_nums_from_string(a_string: String) -> u8 {
+    let trimmed_string = a_string.trim();
+    trimmed_string.get(0..2).unwrap().trim().parse().unwrap()
+}
+
+fn get_colour_from_string(a_string: String) -> CubeColour {
+    let trimmed_string = a_string.trim();
+    let colour = trimmed_string.get(2..).unwrap().trim();
+    match colour {
+        "red" => CubeColour::Red,
+        "green" => CubeColour::Green,
+        "blue" => CubeColour::Blue,
+        _ => {
+            panic!("Not a valid colour!");
+        }
+    }
+}
+
+fn cube_count_compare(count: u8, max: u8) -> bool {
+    println!("{} - {}", count, max);
+    if count > max {
+        false
+    } else {
+        true
+    }
 }
