@@ -35,12 +35,14 @@ fn parse_input(input: Vec<Vec<char>>) {
         while j >= 0 {
             if input[i][j as usize].is_digit(10) {
                 let current_digit = input[i][j as usize];
-                println!("{}", current_digit);
                 digit_parts.push(current_digit);
 
-                if check_valid_digit(i as i8, j as i8, &input) == true {
+                println!("{}", current_digit);
+
+                if check_valid_digit(i as i16, j as i16, &input) == true {
                     let mut rest_of_digit: Vec<char> = get_rest_of_digit(i, j as usize, &input);
                     j_add_factor = rest_of_digit.len() + 1;
+                    
                     digit_parts.append(&mut rest_of_digit);
 
                     println!("{} -> {}", j, j as usize + j_add_factor);
@@ -59,6 +61,7 @@ fn parse_input(input: Vec<Vec<char>>) {
 
             if (j + j_add_factor as i16) < line_length as i16 {
                 j += j_add_factor as i16;
+                j_add_factor = 1;
             } else {
                 j = -1;
             }
@@ -68,14 +71,14 @@ fn parse_input(input: Vec<Vec<char>>) {
     println!("{}", digit_total);
 }
 
-fn check_valid_digit(i: i8, j: i8, input: &Vec<Vec<char>>) -> bool {
+fn check_valid_digit(i: i16, j: i16, input: &Vec<Vec<char>>) -> bool {
     let input_length: usize = input.len();
     let line_length: usize = input[0].len();
 
     let possible_symbols: [char; 4] = ['*', '#', '+', '$'];
 
     if (i == 0) & (j == 0) {
-        let positions_to_check: [i8; 2] = [0, 1];
+        let positions_to_check: [i16; 2] = [0, 1];
 
         for k in 0..2 {
             for l in 0..2 {
@@ -92,8 +95,8 @@ fn check_valid_digit(i: i8, j: i8, input: &Vec<Vec<char>>) -> bool {
             }
         }
         false
-    } else if (i == (input_length - 1) as i8) & (j == (line_length - 1) as i8) {
-        let positions_to_check: [i8; 2] = [-1, 0];
+    } else if (i == (input_length - 1) as i16) & (j == (line_length - 1) as i16) {
+        let positions_to_check: [i16; 2] = [-1, 0];
 
         for k in 0..2 {
             for l in 0..2 {
@@ -111,8 +114,8 @@ fn check_valid_digit(i: i8, j: i8, input: &Vec<Vec<char>>) -> bool {
         }
         false
     } else if i == 0 {
-        let line_positions_to_check: [i8; 2] = [0, 1];
-        let col_positions_to_check: [i8; 3] = [-1, 0, 1];
+        let line_positions_to_check: [i16; 2] = [0, 1];
+        let col_positions_to_check: [i16; 3] = [-1, 0, 1];
 
         for k in 0..2 {
             for l in 0..3 {
@@ -131,8 +134,8 @@ fn check_valid_digit(i: i8, j: i8, input: &Vec<Vec<char>>) -> bool {
 
         false
     } else if j == 0 {
-        let line_positions_to_check: [i8; 3] = [-1, 0, 1];
-        let col_positions_to_check: [i8; 2] = [0, 1];
+        let line_positions_to_check: [i16; 3] = [-1, 0, 1];
+        let col_positions_to_check: [i16; 2] = [0, 1];
 
         for k in 0..3 {
             for l in 0..2 {
@@ -150,9 +153,9 @@ fn check_valid_digit(i: i8, j: i8, input: &Vec<Vec<char>>) -> bool {
         }
 
         false
-    } else if i == (input_length - 1) as i8 {
-        let line_positions_to_check: [i8; 2] = [-1, 0];
-        let col_positions_to_check: [i8; 3] = [-1, 0, 1];
+    } else if i == (input_length - 1) as i16 {
+        let line_positions_to_check: [i16; 2] = [-1, 0];
+        let col_positions_to_check: [i16; 3] = [-1, 0, 1];
 
         for k in 0..2 {
             for l in 0..3 {
@@ -169,8 +172,9 @@ fn check_valid_digit(i: i8, j: i8, input: &Vec<Vec<char>>) -> bool {
             }
         }
         false
-    } else {
-        let positions_to_check: [i8; 3] = [-1, 0, 1];
+    } 
+    else {
+        let positions_to_check: [i16; 3] = [-1, 0, 1];
         for k in 0..3 {
             for l in 0..3 {
                 let line_to_check: usize = (i + positions_to_check[k]) as usize;
