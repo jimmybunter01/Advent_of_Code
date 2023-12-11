@@ -35,17 +35,22 @@ fn parse_input(input: Vec<Vec<char>>) {
         while j >= 0 {
             if input[i][j as usize].is_digit(10) {
                 let current_digit = input[i][j as usize];
+                println!("{}", current_digit);
                 digit_parts.push(current_digit);
 
                 if check_valid_digit(i as i8, j as i8, &input) == true {
                     let mut rest_of_digit: Vec<char> = get_rest_of_digit(i, j as usize, &input);
+                    j_add_factor = rest_of_digit.len() + 1;
                     digit_parts.append(&mut rest_of_digit);
 
+                    println!("{} -> {}", j, j as usize + j_add_factor);
+
                     let digit_string: String = digit_parts.iter().collect();
-                    println!("{}", digit_string);
+
+                    println!("{}\r\n", digit_string);
+
                     let digit: u16 = digit_string.parse().unwrap();
-                    j_add_factor = digit_string.len();
-                    println!("{} - {}", digit, j_add_factor);
+
                     digit_total += digit;
                 }
             } else {
@@ -165,7 +170,6 @@ fn check_valid_digit(i: i8, j: i8, input: &Vec<Vec<char>>) -> bool {
         }
         false
     } else {
-        println!("{}", input[i as usize][j as usize]);
         let positions_to_check: [i8; 3] = [-1, 0, 1];
         for k in 0..3 {
             for l in 0..3 {
