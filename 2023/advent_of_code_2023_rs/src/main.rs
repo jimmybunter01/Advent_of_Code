@@ -28,18 +28,34 @@ fn parse_input(input: Vec<Vec<char>>) {
     let mut digit_total = 0;
 
     for i in 0..input.len() {
+        let mut digit_parts: Vec<char> = Vec::new();
+        let mut j: i16 = 0;
+        let mut j_add_factor = 1;
 
-        let mut digit_parts_so_far: Vec<u16> = Vec::new();
-        
-        for j in 0..line_length {
-            if input[i][j].is_digit(10) {
-                let current_digit = input[i][j].to_digit(10).unwrap() as u16;
-                digit_parts_so_far.push(current_digit);
+        while j >= 0 {
+            if input[i][j as usize].is_digit(10) {
+                let current_digit = input[i][j as usize];
+                digit_parts.push(current_digit);
 
-                let valid_digit = check_valid_digit(i as i8, j as i8, &input);
+                if check_valid_digit(i as i8, j as i8, &input) == true {
+                    let mut rest_of_digit: Vec<char> = get_rest_of_digit(i, j as usize, &input);
+                    digit_parts.append(&mut rest_of_digit);
 
+                    let digit_string: String = digit_parts.iter().collect();
+                    println!("{}", digit_string);
+                    let digit: u16 = digit_string.parse().unwrap();
+                    j_add_factor = digit_string.len();
+                    println!("{} - {}", digit, j_add_factor);
+                    digit_total += digit;
+                }
             } else {
-                current_digit_parts.clear();
+                digit_parts.clear();
+            }
+
+            if (j + j_add_factor as i16) < line_length as i16 {
+                j += j_add_factor as i16;
+            } else {
+                j = -1;
             }
         }
     }
@@ -50,87 +66,116 @@ fn parse_input(input: Vec<Vec<char>>) {
 fn check_valid_digit(i: i8, j: i8, input: &Vec<Vec<char>>) -> bool {
     let input_length: usize = input.len();
     let line_length: usize = input[0].len();
-    
+
     let possible_symbols: [char; 4] = ['*', '#', '+', '$'];
 
     if (i == 0) & (j == 0) {
         let positions_to_check: [i8; 2] = [0, 1];
-        
+
         for k in 0..2 {
             for l in 0..2 {
-                let line_to_check: usize = (i + positions_to_check[k]) as usize;    
-                let col_to_check: usize = (j + positions_to_check[l]) as usize;    
+                let line_to_check: usize = (i + positions_to_check[k]) as usize;
+                let col_to_check: usize = (j + positions_to_check[l]) as usize;
 
                 let char_to_check = input[line_to_check][col_to_check];
 
                 for symbol in possible_symbols.iter() {
                     if char_to_check == *symbol {
                         return true;
-                    } 
+                    }
                 }
-
             }
         }
         false
     } else if (i == (input_length - 1) as i8) & (j == (line_length - 1) as i8) {
         let positions_to_check: [i8; 2] = [-1, 0];
-        
+
         for k in 0..2 {
             for l in 0..2 {
-                let line_to_check: usize = (i + positions_to_check[k]) as usize;    
-                let col_to_check: usize = (j + positions_to_check[l]) as usize;    
+                let line_to_check: usize = (i + positions_to_check[k]) as usize;
+                let col_to_check: usize = (j + positions_to_check[l]) as usize;
 
                 let char_to_check = input[line_to_check][col_to_check];
-                
+
                 for symbol in possible_symbols.iter() {
                     if char_to_check == *symbol {
                         return true;
-                    } 
+                    }
                 }
             }
         }
         false
     } else if i == 0 {
         let line_positions_to_check: [i8; 2] = [0, 1];
-        let col_positions_to_check: [i8; 3] = [-1, 0, 1];        
+        let col_positions_to_check: [i8; 3] = [-1, 0, 1];
 
         for k in 0..2 {
             for l in 0..3 {
-                let line_to_check: usize = (i + line_positions_to_check[k]) as usize;    
-                let col_to_check: usize = (j + col_positions_to_check[l]) as usize;    
+                let line_to_check: usize = (i + line_positions_to_check[k]) as usize;
+                let col_to_check: usize = (j + col_positions_to_check[l]) as usize;
 
                 let char_to_check = input[line_to_check][col_to_check];
-                
+
                 for symbol in possible_symbols.iter() {
                     if char_to_check == *symbol {
                         return true;
-                    } 
+                    }
                 }
-
             }
         }
 
         false
+    } else if j == 0 {
+        let line_positions_to_check: [i8; 3] = [-1, 0, 1];
+        let col_positions_to_check: [i8; 2] = [0, 1];
+
+        for k in 0..3 {
+            for l in 0..2 {
+                let line_to_check: usize = (i + line_positions_to_check[k]) as usize;
+                let col_to_check: usize = (j + col_positions_to_check[l]) as usize;
+
+                let char_to_check = input[line_to_check][col_to_check];
+
+                for symbol in possible_symbols.iter() {
+                    if char_to_check == *symbol {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        false
+    } else if i == (input_length - 1) as i8 {
+        let line_positions_to_check: [i8; 2] = [-1, 0];
+        let col_positions_to_check: [i8; 3] = [-1, 0, 1];
+
+        for k in 0..2 {
+            for l in 0..3 {
+                let line_to_check: usize = (i + line_positions_to_check[k]) as usize;
+                let col_to_check: usize = (j + col_positions_to_check[l]) as usize;
+
+                let char_to_check = input[line_to_check][col_to_check];
+
+                for symbol in possible_symbols.iter() {
+                    if char_to_check == *symbol {
+                        return true;
+                    }
+                }
+            }
+        }
+        false
     } else {
+        println!("{}", input[i as usize][j as usize]);
         let positions_to_check: [i8; 3] = [-1, 0, 1];
         for k in 0..3 {
             for l in 0..3 {
-                
-                let line_to_check: usize = (i + positions_to_check[k]) as usize;    
-                let col_to_check: usize = (j + positions_to_check[l]) as usize;    
-                
-                if (line_to_check < input_length) & (col_to_check < line_length) {
-                    let char_to_check = input[line_to_check][col_to_check];
-                    for symbol in possible_symbols.iter() {
-                        if char_to_check == *symbol {
-                            return true;
-                        } else {
-                            return false;
-                        }
+                let line_to_check: usize = (i + positions_to_check[k]) as usize;
+                let col_to_check: usize = (j + positions_to_check[l]) as usize;
+                let char_to_check = input[line_to_check][col_to_check];
+                for symbol in possible_symbols.iter() {
+                    if char_to_check == *symbol {
+                        return true;
                     }
-                } 
-                else {
-                    return false;
                 }
             }
         }
@@ -138,13 +183,12 @@ fn check_valid_digit(i: i8, j: i8, input: &Vec<Vec<char>>) -> bool {
     }
 }
 
-fn get_digit(i: usize, j: usize, input: &Vec<Vec<char>>) -> u16 {
-    let extra_digit_parts = 
-    for i in 1..3 {
-        if input[i][j+i].is_digit(10) {
-
+fn get_rest_of_digit(i: usize, j: usize, input: &Vec<Vec<char>>) -> Vec<char> {
+    let mut rest_of_digit: Vec<char> = Vec::new();
+    for n in 1..3 {
+        if input[i][j + n].is_digit(10) {
+            rest_of_digit.push(input[i][j + n]);
         }
     }
-
-    
+    rest_of_digit
 }
