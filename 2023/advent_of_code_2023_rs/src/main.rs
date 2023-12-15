@@ -10,6 +10,7 @@ fn main() {
 
     let input: Vec<Vec<char>> = read_lines(input_path);
     // part1::parse_input(input)
+    part2::parse_input(input)
 }
 
 fn read_lines(file: &Path) -> Vec<Vec<char>> {
@@ -37,15 +38,11 @@ mod part1 {
                 if input[i][j as usize].is_digit(10) {
                     let current_digit = input[i][j as usize];
                     digit_parts.push(current_digit);
-                    
-                    if digit_parts == vec!('2', '5', '8') {
-                        println!();
-                    }
 
                     if check_valid_digit(i as i16, j as i16, &input) == true {
                         let mut rest_of_digit: Vec<char> = get_rest_of_digit(i, j as usize, &input);
                         j_add_factor = rest_of_digit.len() + 1;
-                        
+
                         digit_parts.append(&mut rest_of_digit);
 
                         let digit_string: String = digit_parts.iter().collect();
@@ -192,8 +189,7 @@ mod part1 {
                 }
             }
             false
-        }
-        else {
+        } else {
             let positions_to_check: [i16; 3] = [-1, 0, 1];
             for k in 0..3 {
                 for l in 0..3 {
@@ -217,7 +213,7 @@ mod part1 {
             if input[i][j + n].is_digit(10) {
                 rest_of_digit.push(input[i][j + n]);
             } else {
-                return rest_of_digit
+                return rest_of_digit;
             }
         }
         rest_of_digit
@@ -225,106 +221,143 @@ mod part1 {
 }
 
 mod part2 {
-// Find the star
+    // Find the star
     pub fn parse_input(input: Vec<Vec<char>>) {
         let line_length = input[0].len();
-        let digit_locations_already_used : Vec<(i16, i16)> = Vec::new();
+        let input_length = input.len();
 
-        for i in 0..input.len() {
-            let mut digit_parts: Vec<char> = Vec::new();
+        let mut gear_ratio_total: u64 = 0;
+
+        for i in 0..input_length {
             let mut j: i16 = 0;
-            let mut j_add_factor = 1;
 
             while j >= 0 {
                 if input[i][j as usize] == '*' {
-                    if check_if_valid_gear(i, j as usize, input, line_length) {
+                    let digits = check_if_valid_gear(i, j as usize, &input, line_length);
+                    if !digits.0.is_empty() & !digits.1.is_empty() {
+                        let digit_1: String = digits.0.iter().collect();
+                        let digit_2: String = digits.1.iter().collect();
 
+                        let digit_1 : u64 = digit_1.parse().unwrap();
+                        let digit_2 : u64 = digit_2.parse().unwrap();
+
+                        gear_ratio_total += digit_1 * digit_2;
+                        println!("{} * {} = {} - At location [{},{}]", digit_1, digit_2, gear_ratio_total, i,j);
                     }
+                }
+
+                if j as usize + 1 < line_length {
+                    j += 1;
+                } else {
+                    j = - 1;
                 }
             }
         }
+        println!("{}", gear_ratio_total)
     }
 
-    fn check_if_valid_gear(i: usize, j : usize, input: Vec<Vec<char>>, line_length: usize) -> (Vec<u32>, Vec<u32>) {
+    fn check_if_valid_gear(i: usize, j: usize, input: &Vec<Vec<char>>, line_length: usize) -> (Vec<char>, Vec<char>) {
+        
         let input_len = input.len();
-        let mut value_of_digits_found: (Vec<u32>, Vec<u32>) = (Vec::new(), Vec::new());
-
+        let mut value_of_digits_found: (Vec<char>, Vec<char>) = (Vec::new(), Vec::new());
+        
         let positions_to_check: [i16; 3] = [-1, 0, 1];
-            for k in 0..3 {
-                for l in 0..3 {
-                    let line_to_check: i16 = (i + positions_to_check[k]);
-                    let col_to_check: i16 = (j + positions_to_check[l]);
-                    
-                    if line_to_check >= 0 & line_to_check < input_len & col_to_check >= 0  & col_to_check < line_length {
-                        let char_to_check = input[line_to_check][col_to_check];
-                        if char_to_check.is_digit(10) {
-                            value_of_digits_found.0.append(char_to_check);
-                            check_left();
-                            check_right();
+        
+        let mut k = 0;
+        let mut l = 0;
+
+        let mut digits_around_gear = 0;
+
+        while k < 3 {
+            while l < 3 {
+                let _line_to_check: i16 = i as i16 + positions_to_check[k];
+                let _col_to_check: i16 = j as i16 + positions_to_check[l];
+
+                let line_to_check = _line_to_check as usize;
+                let col_to_check = _col_to_check as usize;
+                let mut l_add_factor = 1;
+
+                if (line_to_check >= 0 as usize) & (line_to_check < input_len) & (col_to_check >= 0 as usize) & (col_to_check < line_length) {    
+                    let mut digit: Vec<char> = Vec::new();
+                    let char_to_check = input[line_to_check][col_to_check];
+
+                    if char_to_check.is_digit(10) {
+                        digits_around_gear += 1;
+
+                        if digits_around_gear > 2 {
+                            value_of_digits_found.0 = Vec::new();
+                            value_of_digits_found.1 = Vec::new();
+                            break;
                         }
 
+                        digit = check_left(line_to_check, col_to_check, &input);
+                        let mut digits_to_right: Vec<char> = check_right(line_to_check, col_to_check, &input, line_length);
+                        l_add_factor = digits_to_right.len() + 1;
+                        digit.push(char_to_check);
+                        digit.append(&mut digits_to_right);
+                        
+
+                        if value_of_digits_found.0.is_empty() {
+                            value_of_digits_found.0 = digit;    
+                        } else {
+                            value_of_digits_found.1 = digit;
+                        }
                     }
-                    
-                    
-                    
                 }
+                l += l_add_factor;
             }
-            false
+            k+=1;
+            l=0;
+        }
+        value_of_digits_found
     }
+        
 
-    fn check_left(start_line: usize, start_col: usize, input: Vec<Vec<char>>) -> Vec<char> {
-        let digits_to_the_left: Vec<char> = Vec::new();
+    fn check_left(start_line: usize, start_col: usize, input: &Vec<Vec<char>>) -> Vec<char> {
+        let mut digits_to_the_left: Vec<char> = Vec::new();
         let mut n = 1;
 
         while n > 0 {
-            let col_to_check: usize = (start_col - n);
-                    
-            if col_to_check >= 0 { 
-                let char_to_check = input[start_line][col_to_check];
-                
-                if char_to_check.is_digit(10) {
-                    digits_to_the_left.insert(0, element)
-                }
+            let col_to_check: i16 = start_col as i16 - n;
 
-                n += 1;
-            } else {
-                n = 0;
+            if col_to_check >= 0 {
+                let char_to_check = input[start_line][col_to_check as usize];
+
+                if char_to_check.is_digit(10) {
+                    digits_to_the_left.insert(0, char_to_check);
+                    n += 1;
+                } else {
+                    n = 0;
+                }
             }
+            else {
+                n = 0;
+            } 
         }
 
         digits_to_the_left
     }
 
-    fn check_right(start_line: usize, start_col: usize, input: Vec<Vec<char>>, input_len: usize, line_length: usize) {
-        let digits_to_the_left: Vec<char> = Vec::new();
+    fn check_right(start_line: usize, start_col: usize, input: &Vec<Vec<char>>, line_length: usize) -> Vec<char> {
+        let mut digits_to_the_right: Vec<char> = Vec::new();
         let mut n = 1;
 
         while n > 0 {
-            let col_to_check: usize = (start_col - n);
-                    
-            if col_to_check >= 0 { 
-                let char_to_check = input[start_line][col_to_check];
-                
-                if char_to_check.is_digit(10) {
-                    digits_to_the_left.insert(0, element)
-                }
+            let col_to_check: usize = start_col + n;
 
-                n += 1;
+            if col_to_check < line_length {
+                let char_to_check = input[start_line][col_to_check];
+
+                if char_to_check.is_digit(10) {
+                    digits_to_the_right.push(char_to_check);
+                    n += 1;
+                } else {
+                    n = 0;
+                }
             } else {
                 n = 0;
             }
         }
-
-        digits_to_the_left
+        digits_to_the_right
     }
-}
-
-
-
-
-// Check the square around the *
-// If you find a digit, get the rest of that digit - will need to check to the left and right.
-// Resume checking for another digit, if you do repeat steps for finding the rest of the digit and getting all of it.
-// Multiply both digits together. 
-
 }
